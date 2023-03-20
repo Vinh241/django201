@@ -1,0 +1,112 @@
+1. Creating a virtual environment
+ktra pipenv
+pip show pipenv
+2. Start a new project
+3. Adding gitignore to your project 
+Ghi tên các file k muốn push lên github bào như db.sqlite3 
+4. Your first app
+tạo user:
+python manage.py createsuperuser
+tạo app 
+python manage.py startapp name_app
+5. Your first model 
+ở file model :
+from django.db import models
+
+# Create your models here.
+class Post(models.Model):
+    text = models.CharField(max_length=140)
+tạo model python manage.py makemigrations
+python manage.py migrate 
+6. Register your model with the Django admin 
+file admin.py 
+from django.contrib import admin
+from .models import Post 
+# Register your models here.
+class PostAdmin(admin.ModelAdmin):
+    pass
+admin.site.register(Post,PostAdmin)
+7. Adding a DataTimeField
+Tự ghi lại thời gian tạo posts :
+from django.db import models
+
+# Create your models here.
+class Post(models.Model):
+    text = models.CharField(max_length=240)
+    date = models.DateTimeField(auto_now=True)# thêm date 
+    def __str__(self) -> str:
+        return self.text 
+8. Home Page List View 
+vào file views.py 
+from django.views.generic import ListView
+from .models import Post
+
+class HomePage(ListView):
+    template_name='homepage.html'
+    http_method_names = ['get']# người dùng chỉ có thể get chứ k delete,update ,...
+    model = Post 
+    context_object_name='posts'
+    queryset = Post.objects.all().order_by('-id')[0:30]
+9. Setting up your template location
+Vào file setting.py của project 
+import os 
+TEMPLATES_DIR = os.path.join(BASE_DIR,'til/templates')
+vào mục TEMPLATES
+"DIRS": [TEMPLATES_DIR],
+cách làm trong django201
+TEMPLATES_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+"DIRS": [
+    os.path.join(TEMPLATES_DIR,'til/templates')
+],
+10. Remove file html 
+chuyển file html từ til (project chính) / templates/ homepage.html về feed 
+ở file views.py 
+template_name='feed/homepage.html'
+sau đó tạo 1 file feed/templates/homepage.html 
+11. Your base template
+trong file homepage.html 
+{% extends 'base.html' %}
+sau đó ở file til/templates/base.html
+bao gồm nội dung html 
+12. template block 
+13. template loops
+file homepage.html
+{% extends 'base.html' %}
+{% block body %}
+    {% for post in posts  %}
+        {{post.text}} written in {{post.date}}
+        <hr>
+    {% endfor %}
+{% endblock  %}
+for vào context_object_name
+14. Adding login/logout/password reset to your website 
+Install django-allauth
+pip install django-allauth
+
+ở file settings.py
+thêm 'allauth' vào INSTATTLED APPS
+    + 'allauth.account'
+    + 'allauth.socialaccount'
+    +     "django.contrib.sites",
+
+Setting ở cuối file
+# XEM CACS THUOC TINH VAO DJANGO ALLAUTH DOC 
+SIDE_ID =1 #only have 1 site
+LOGIN_URL = '/login/' # url
+LOGIN_REDIRECT_URL = '/'# KHI LOGIN XONG QUAY VE HOMEPAGE
+ACCOUNT_AUTHENTICATION_METHOD= 'email'
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True # Khi click confirm in email thi tự động confirm ở web
+ACCOUNT_EMAIL_REQUIRED = True # mỗi ng đều có 1 email
+ACCOUNT_EMAIL_VERIFICATION = 'optional'/ 'mandatory'
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION =True
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
+ACCOUNT_LOGOUT_REDIRECT = '/' # QUAY VE HOME PAGE KHI LOGOUT
+ACCOUNT_PRESERVE_USERNAME_CASING = False # 'KANE' == "kane"
+ACCOUNT_SESSION_REMEMBER= True # NHỚ MKAU 4EVER
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True # kHI ĐKI THÌ PHẢI ĐIỂN MK 2 LẦN
+ACCOUNT_USERNAME_MIN_LENGTH = 2
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",
+    'allauth.account.auth_backends.AuthenticationBackend'
+)
